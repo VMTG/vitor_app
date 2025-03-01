@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // For SystemNavigator.pop()
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
-import 'package:flutter_phoenix/flutter_phoenix.dart'; // For resetting the app
+import 'package:flutter_phoenix/flutter_phoenix.dart'; // For resetting the ap
 
 // ******************************************************************************
 // * MAIN APPLICATION ENTRY POINT
