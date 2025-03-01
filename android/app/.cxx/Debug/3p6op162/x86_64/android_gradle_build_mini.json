@@ -1,0 +1,20 @@
+{
+  "buildFiles": [
+    "C:\\src\\flutter\\packages\\flutter_tools\\gradle\\src\\main\\groovy\\CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "C:\\Users\\vitor\\AppData\\Local\\Android\\Sdk\\cmake\\3.22.1\\bin\\ninja.exe",
+      "-C",
+      "C:\\Users\\vitor\\Desktop\\Trabalho_Final_SFP\\Victor app andriod apk  code  vedio include\\Victor app android\\victor ble\\android\\app\\.cxx\\Debug\\3p6op162\\x86_64",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "C:\\Users\\vitor\\AppData\\Local\\Android\\Sdk\\cmake\\3.22.1\\bin\\ninja.exe",
+    "-C",
+    "C:\\Users\\vitor\\Desktop\\Trabalho_Final_SFP\\Victor app andriod apk  code  vedio include\\Victor app android\\victor ble\\android\\app\\.cxx\\Debug\\3p6op162\\x86_64",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {}
+}

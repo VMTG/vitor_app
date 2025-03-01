@@ -1,0 +1,44 @@
+name: Sensor
+description: sensor
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.19.0 <3.0.0"
+  flutter: ">=3.7.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_bloc: ^8.1.0
+  flutter_reactive_ble: ^5.0.2
+  meta: ^1.7.0
+  flutter_blue_plus: ^1.8.7
+  syncfusion_flutter_charts: ^27.1.53
+  intl: ^0.18.1
+  flutter_phoenix: ^1.0.0
+
+
+
+
+
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+
+flutter:
+  uses-material-design: true
+
+android:
+  compileSdkVersion: 33
+  minSdkVersion: 21
+  targetSdkVersion: 33
+  permissions:
+    - android.permission.BLUETOOTH
+    - android.permission.BLUETOOTH_SCAN
+    - android.permission.BLUETOOTH_CONNECT
+    - android.permission.ACCESS_FINE_LOCATION
