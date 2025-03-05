@@ -33,14 +33,14 @@ class SensorApp extends StatelessWidget {
     return MaterialApp(
       title: 'Sensor Data',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: const StartPage(), // Usar a página inicial como home
+      home: const StartPage(), // Use the home page as home
     );
   }
 }
 
 // ******************************************************************************
-// * MODO DE OPERAÇÃO ENUM
-// * Define os modos de operação disponíveis no aplicativo
+// * OPERATION MODE ENUM
+// * Defines the operating modes available in the application
 // ******************************************************************************
 enum OperationMode {
   continuous,
@@ -48,7 +48,7 @@ enum OperationMode {
 }
 
 // ******************************************************************************
-// * NOVA PÁGINA INICIAL COM BOTÕES PARA OS MODOS
+// * NEW HOME PAGE WITH MODE BUTTONS
 // ******************************************************************************
 class StartPage extends StatelessWidget {
   const StartPage({super.key});
@@ -71,7 +71,7 @@ class StartPage extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            // Título do aplicativo
+            // Application title
             const Text(
               'Sensor Data Visualizer',
               style: TextStyle(
@@ -81,7 +81,7 @@ class StartPage extends StatelessWidget {
             ),
             const SizedBox(height: 10),
 
-            // Descrição do aplicativo
+            // Application description
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 40),
               child: Text(
@@ -95,7 +95,7 @@ class StartPage extends StatelessWidget {
             ),
             const SizedBox(height: 50),
 
-            // Seção de modos de operação
+            // Operation modes section
             const Text(
               'Select operating mode:',
               style: TextStyle(
@@ -105,10 +105,10 @@ class StartPage extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            // Botão Modo Contínuo
+            // Continuous mode button
             ElevatedButton(
               onPressed: () {
-                // Navegar para a tela de sensores no modo contínuo
+                // Navigate to the sensors screen in continuous mode
                 Navigator.of(context).pushReplacement(
                   MaterialPageRoute(
                     builder: (context) => DeviceScreen(
@@ -132,10 +132,10 @@ class StartPage extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // Botão Modo de Impacto
+            // Impact mode button
             ElevatedButton(
               onPressed: () {
-                // Navegar para a tela de sensores no modo de impacto
+                // Navigate to the sensors screen in impact mode
                 Navigator.of(context).pushReplacement(
                   MaterialPageRoute(
                     builder: (context) => DeviceScreen(
@@ -158,7 +158,7 @@ class StartPage extends StatelessWidget {
               ),
             ),
 
-            // Versão do aplicativo
+            // Application version
             const SizedBox(height: 40),
             const Text(
               'Versão 1.0.0',
@@ -331,13 +331,29 @@ class _DeviceScreenState extends State<DeviceScreen> {
         // Compute total rotation using the formula √(gx²+gy²+gz²)
         final double computedGyroTotal = sqrt(gx * gx + gy * gy + gz * gz);
 
-        // Check for impact in impact mode
-        bool shouldUpdateData = true;
-        if (widget.mode == OperationMode.impact) {
-          // Only update data when impact is detected or we're already showing an impact
+        // IMPORTANT: Always process data in continuous mode
+        if (widget.mode == OperationMode.continuous) {
+          // Always update data in continuous mode
+          if (mounted) {
+            setState(() {
+              if (computedAccelTotal >= _impactThreshold) {
+                _impactDetected = true;
+                _lastImpactTime = now;
+              }
+
+              _updateSensorData(now, temp, pressure, ax, ay, az,
+                  computedAccelTotal, gx, gy, gz, computedGyroTotal);
+            });
+          }
+        }
+        // For impact mode, use the original logic
+        else if (widget.mode == OperationMode.impact) {
+          bool shouldUpdateData = false;
+
           if (computedAccelTotal >= _impactThreshold) {
             _impactDetected = true;
             _lastImpactTime = now;
+            shouldUpdateData = true;
 
             // Clear previous data on new impact
             if (mounted) {
@@ -345,55 +361,67 @@ class _DeviceScreenState extends State<DeviceScreen> {
                 _clearSensorData();
               });
             }
-          } else {
-            // If we're not in an impact state, don't update the data
-            if (!_impactDetected) {
-              shouldUpdateData = false;
-            } else if (_lastImpactTime != null) {
-              // Check if we should continue recording after impact
-              // (for 5 seconds after impact)
-              final Duration timeSinceImpact = now.difference(_lastImpactTime!);
-              if (timeSinceImpact.inSeconds > 5) {
-                _impactDetected = false;
-                shouldUpdateData = false;
-              }
+          } else if (_impactDetected && _lastImpactTime != null) {
+            // Keep recording for 5 seconds after impact
+            final Duration timeSinceImpact = now.difference(_lastImpactTime!);
+            if (timeSinceImpact.inSeconds <= 5) {
+              shouldUpdateData = true;
+            } else {
+              _impactDetected = false;
             }
           }
-        }
 
-        if (shouldUpdateData && mounted) {
-          setState(() {
-            // Update basic sensor data lists
-            _temperatureData.add(SensorData(now, temp));
-            _pressureData.add(SensorData(now, pressure));
-            _accelTotalData.add(SensorData(now, computedAccelTotal));
-            _gyroTotalData.add(SensorData(now, computedGyroTotal));
-
-            // Update individual axis data lists
-            _accelXData.add(SensorData(now, ax));
-            _accelYData.add(SensorData(now, ay));
-            _accelZData.add(SensorData(now, az));
-            _gyroXData.add(SensorData(now, gx));
-            _gyroYData.add(SensorData(now, gy));
-            _gyroZData.add(SensorData(now, gz));
-
-            // Keep data lists at a manageable size (50 points maximum)
-            if (_temperatureData.length > 50) _temperatureData.removeAt(0);
-            if (_pressureData.length > 50) _pressureData.removeAt(0);
-            if (_accelTotalData.length > 50) _accelTotalData.removeAt(0);
-            if (_gyroTotalData.length > 50) _gyroTotalData.removeAt(0);
-            if (_accelXData.length > 50) _accelXData.removeAt(0);
-            if (_accelYData.length > 50) _accelYData.removeAt(0);
-            if (_accelZData.length > 50) _accelZData.removeAt(0);
-            if (_gyroXData.length > 50) _gyroXData.removeAt(0);
-            if (_gyroYData.length > 50) _gyroYData.removeAt(0);
-            if (_gyroZData.length > 50) _gyroZData.removeAt(0);
-          });
+          if (shouldUpdateData && mounted) {
+            setState(() {
+              _updateSensorData(now, temp, pressure, ax, ay, az,
+                  computedAccelTotal, gx, gy, gz, computedGyroTotal);
+            });
+          }
         }
       }
     } catch (e) {
       print('Error parsing data: $e');
     }
+  }
+
+// Add a separate method for updating sensor data to avoid code duplication
+  void _updateSensorData(
+      DateTime now,
+      double temp,
+      double pressure,
+      double ax,
+      double ay,
+      double az,
+      double computedAccelTotal,
+      double gx,
+      double gy,
+      double gz,
+      double computedGyroTotal) {
+    // Update basic sensor data lists
+    _temperatureData.add(SensorData(now, temp));
+    _pressureData.add(SensorData(now, pressure));
+    _accelTotalData.add(SensorData(now, computedAccelTotal));
+    _gyroTotalData.add(SensorData(now, computedGyroTotal));
+
+    // Update individual axis data lists
+    _accelXData.add(SensorData(now, ax));
+    _accelYData.add(SensorData(now, ay));
+    _accelZData.add(SensorData(now, az));
+    _gyroXData.add(SensorData(now, gx));
+    _gyroYData.add(SensorData(now, gy));
+    _gyroZData.add(SensorData(now, gz));
+
+    // Keep data lists at a manageable size (50 points maximum)
+    if (_temperatureData.length > 50) _temperatureData.removeAt(0);
+    if (_pressureData.length > 50) _pressureData.removeAt(0);
+    if (_accelTotalData.length > 50) _accelTotalData.removeAt(0);
+    if (_gyroTotalData.length > 50) _gyroTotalData.removeAt(0);
+    if (_accelXData.length > 50) _accelXData.removeAt(0);
+    if (_accelYData.length > 50) _accelYData.removeAt(0);
+    if (_accelZData.length > 50) _accelZData.removeAt(0);
+    if (_gyroXData.length > 50) _gyroXData.removeAt(0);
+    if (_gyroYData.length > 50) _gyroYData.removeAt(0);
+    if (_gyroZData.length > 50) _gyroZData.removeAt(0);
   }
 
   // Clear all sensor data
